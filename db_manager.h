@@ -13,44 +13,88 @@ struct Column{
     int index;
     std::string name;
 
+    Column(){}
     Column(int index, std::string name) : index(index), name(name) {}
+};
+
+/*******************
+ * DATABASE SCHEMA *
+ *******************/
+class DatabaseSchema
+{
+public:
+    DatabaseSchema();
+    ~DatabaseSchema();
+
+    class Tables{
+    public:
+        enum TableNames{
+            _ECODATA = 0,
+            _TABLE_COUNT
+        };
+        Tables();
+        ~Tables();
+        std::string operator[](TableNames name) const;
+    private:
+        std::string m_tables[TableNames::_TABLE_COUNT];
+    };
+
+    class Columns{
+    public:
+        enum ColumnNames{
+            _ID,
+            _SPECIES,
+            _DURATION,
+            _HUMIDITIES,
+            _ILLUMINATIONS,
+            _TEMPERATURES,
+            _COUNT
+        };
+
+        Columns();
+        ~Columns();
+        Column get(ColumnNames name, int index = 0) const;
+        int columnCount() const;
+    private:
+        std::vector<Column> m_columns[ColumnNames::_COUNT];
+        int m_column_count;
+    };
+    std::string db_creation_code;
+    Columns columns;
+    Tables tables;
 };
 
 /*********************
  * GENERIC CONSTANTS *
  *********************/
-static const Column column_id = Column(0,"_id");
+//static const Column column_id = Column(0,"_id");
 
-/*****************
- * DATA TABLE *
- *****************/
-static const std::string ecodata_table_name = "ecodata";
-// Humidity
-static const Column ecodata_table_column_min_humidity = Column(1,"min_humidity");
-static const Column ecodata_table_column_max_humidity = Column(2,"max_humidity");
-// Illumination
-static const Column ecodata_table_column_min_illumination = Column(3,"min_illumination");
-static const Column ecodata_table_column_max_illumination = Column(4,"max_illumination");
-// Temperature
-static const Column ecodata_table_column_min_temp = Column(5,"min_temp");
-static const Column ecodata_table_column_max_temp = Column(6,"max_temp");
-// Duration
-static const Column ecodata_table_column_duration = Column(7,"duration");
-// Species
-static const Column ecodata_table_column_species = Column(8,"species");
+///*****************
+// * DATA TABLE *
+// *****************/
+//// Humidity
+//static Column column_humidities[12];// = Column(1,"min_humidity");
+//// Illumination
+//static Column column_illuminations[12];
+//// Temperature
+//static Column column_temperatures[12];
+//// Duration
+//static const Column ecodata_table_column_duration = Column(7,"duration");
+//// Species
+//static const Column ecodata_table_column_species = Column(8,"species");
 
 
-static const std::string ecodata_table_creation_code =
-                "CREATE TABLE IF NOT EXISTS " + ecodata_table_name + "( " +
-                                                column_id.name + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                                                ecodata_table_column_min_humidity.name + " INTEGER NOT NULL," +
-                                                ecodata_table_column_max_humidity.name + " INTEGER NOT NULL," +
-                                                ecodata_table_column_min_illumination.name + " INTEGER NOT NULL," +
-                                                ecodata_table_column_max_illumination.name + " INTEGER NOT NULL," +
-                                                ecodata_table_column_min_temp.name + " INTEGER NOT NULL," +
-                                                ecodata_table_column_max_temp.name + " INTEGER NOT NULL," +
-                                                ecodata_table_column_duration.name + " INTEGER NOT NULL," +
-                                                ecodata_table_column_species.name + " TEXT NOT NULL);";
+//static const std::string ecodata_table_creation_code =
+//                "CREATE TABLE IF NOT EXISTS " + ecodata_table_name + "( " +
+//                                                column_id.name + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+//                                                ecodata_table_column_min_humidity.name + " INTEGER NOT NULL," +
+//                                                ecodata_table_column_max_humidity.name + " INTEGER NOT NULL," +
+//                                                ecodata_table_column_min_illumination.name + " INTEGER NOT NULL," +
+//                                                ecodata_table_column_max_illumination.name + " INTEGER NOT NULL," +
+//                                                ecodata_table_column_min_temp.name + " INTEGER NOT NULL," +
+//                                                ecodata_table_column_max_temp.name + " INTEGER NOT NULL," +
+//                                                ecodata_table_column_duration.name + " INTEGER NOT NULL," +
+//                                                ecodata_table_column_species.name + " TEXT NOT NULL);";
 
 class DBManager {
 public:
@@ -61,7 +105,6 @@ public:
      * OPEN DATABASE CONNECTION *
      ****************************/
     sqlite3 * open_db() const;
-    void init() const;
 
     /**********
      * INSERT *
@@ -71,8 +114,6 @@ public:
     /*********
      * QUERY *
      *********/
-    std::vector<EntryData> getData(const std::pair<int,int> humidity, const std::pair<int,int> illumination, const std::pair<int,int> temperature,
-                                 const std::set<int> species) const;
     std::vector<EntryData> getAllData() const;
 
     /**********
@@ -81,10 +122,12 @@ public:
     void remove() const; // TODO: Whats the best reference for removal?
 
 private:
+    void init();
     void exit_on_error(int p_code, int p_line,  char * p_error_msg = NULL) const;
+    void build_insert_statement();
 
-private:
-
+    static const DatabaseSchema _SCHEMA;
+    std::string m_insert_statement;
 };
 
 #endif // DB_MANAGER_H

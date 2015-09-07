@@ -13,19 +13,6 @@
 /***************
  * DATA WIDGET *
  ***************/
-enum DataColumns{
-    MinHumidity = 0,
-    MaxHumidity,
-    MinIllumination,
-    MaxIllumination,
-    MinTemp,
-    MaxTemp,
-    Duration,
-    Species,
-    Dir,
-    ColumnCount
-};
-
 class DataWidget : public QTableWidget
 {
 public:
@@ -36,6 +23,19 @@ public:
     void set(std::vector<EntryData> data);
 
 private:
+    class Columns{
+    public:
+        Columns();
+        ~Columns();
+        int species;
+        int dir;
+        int duration;
+        int humidities[12];
+        int illuminations[12];
+        int temperatures[12];
+        int column_count;
+    };
+    Columns m_columns;
     QTableWidgetItem * generate_read_only_cell(QString p_cell_content);
 };
 
@@ -50,28 +50,15 @@ public:
     ~CentralWidget();
 
 private slots:
-    void refresh();
+//    void refresh();
 
 private:
     void init_layout();
-    QLineEdit * create_connected_line_edit();
-    int get_int_line_edit_value(QLineEdit * line_edit);
+//    QLineEdit * create_connected_line_edit();
+//    int get_int_line_edit_value(QLineEdit * line_edit);
 
     DataWidget * m_data_widget;
     DBManager m_db;
-
-    QLineEdit * m_min_temperature_query;
-    QLineEdit * m_max_temperature_query;
-
-    QLineEdit * m_min_humidity_query;
-    QLineEdit * m_max_humidity_query;
-
-    QLineEdit * m_min_illumination_query;
-    QLineEdit * m_max_illumination_query;
-
-    QLineEdit * m_species_query;
-
-    QPushButton * m_refresh_btn;
 };
 
 #endif //CENTRAL_WIDGET_H

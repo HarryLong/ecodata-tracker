@@ -3,11 +3,19 @@
 
 #include <set>
 #include <map>
+#include <vector>
 
-struct EntryData{
-    std::pair<int,int> humidity;
-    std::pair<int,int> illumination;
-    std::pair<int,int> temperature;
+class EntryData{
+public:
+    EntryData() {}
+    EntryData(std::vector<int> humidities, std::vector<int> illuminations, std::vector<int> temperatures, std::set<int> species, int duration, int dir = 0) :
+        humidities(humidities), illuminations(illuminations), temperatures(temperatures), species(species),
+        duration(duration), dir(dir) {}
+    ~EntryData() {}
+
+    std::vector<int> humidities;
+    std::vector<int> illuminations;
+    std::vector<int> temperatures;
     std::set<int> species;
     int duration;
     int dir;
