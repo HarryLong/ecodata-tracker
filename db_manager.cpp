@@ -1,8 +1,10 @@
 #include "db_manager.h"
+#include "utils.h"
+#include "settings.h"
+
 #include <QString>
 #include <iostream>
 #include <QStringList>
-#include "utils.h"
 
 DBManager::DBManager()
 {
@@ -18,7 +20,7 @@ DBManager::~DBManager()
 sqlite3 * DBManager::open_db() const
 {
     sqlite3 * db;
-    exit_on_error ( sqlite3_open(db_name.c_str(), &db), __LINE__, "" );
+    exit_on_error ( sqlite3_open(Settings::_DB_PATH.c_str(), &db), __LINE__, "" );
     exit_on_error( sqlite3_exec(db, "PRAGMA foreign_keys = ON;", 0, 0, 0), __LINE__);
     return db;
 }
@@ -40,7 +42,7 @@ void DBManager::init() const
 /**********
  * INSERT *
  **********/
-int DBManager::insert(const RowData & data) const
+int DBManager::insert(const EntryData & data) const
 {
     sqlite3 * db (open_db());
     char *error_msg = 0;
@@ -90,7 +92,7 @@ int DBManager::insert(const RowData & data) const
 /*********
  * QUERY *
  *********/
-std::vector<RowData> DBManager::getData(const std::pair<int,int> humidity, const std::pair<int,int> illumination, const std::pair<int,int> temperature,
+std::vector<EntryData> DBManager::getData(const std::pair<int,int> humidity, const std::pair<int,int> illumination, const std::pair<int,int> temperature,
                                         const std::set<int> species) const
 {
     sqlite3 * db (open_db());
@@ -175,10 +177,10 @@ std::vector<RowData> DBManager::getData(const std::pair<int,int> humidity, const
     for(std::string bind_value : string_binds)
         exit_on_error(sqlite3_bind_text(statement, bind_index++, bind_value.c_str(), -1, NULL), __LINE__);
 
-    std::vector<RowData> ret;
+    std::vector<EntryData> ret;
     while(sqlite3_step(statement) == SQLITE_ROW)
     {
-        RowData row_data;
+        EntryData row_data;
         for(int c (0); c < sqlite3_column_count(statement); c++)
         {
             if(c == column_id.index)
@@ -219,7 +221,7 @@ std::vector<RowData> DBManager::getData(const std::pair<int,int> humidity, const
     return ret;
 }
 
-std::vector<RowData> DBManager::getAllData() const
+std::vector<EntryData> DBManager::getAllData() const
 {
     std::pair<int,int> unfiltered(-1,-1);
     return getData(unfiltered, unfiltered, unfiltered, std::set<int>());

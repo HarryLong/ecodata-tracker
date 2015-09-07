@@ -4,7 +4,7 @@
 #include <set>
 #include <map>
 
-struct RowData{
+struct EntryData{
     std::pair<int,int> humidity;
     std::pair<int,int> illumination;
     std::pair<int,int> temperature;

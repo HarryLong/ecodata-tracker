@@ -1,8 +1,7 @@
 #ifndef DB_MANAGER_H
 #define DB_MANAGER_H
 
-#include "row_data.h"
-#include "settings.h"
+#include "entry_data.h"
 
 #include <sqlite3.h>
 #include <map>
@@ -20,7 +19,6 @@ struct Column{
 /*********************
  * GENERIC CONSTANTS *
  *********************/
-static const std::string db_name = std::string(MAIN_DIR) + "ECODATA.db";
 static const Column column_id = Column(0,"_id");
 
 /*****************
@@ -68,14 +66,14 @@ public:
     /**********
      * INSERT *
      **********/
-    int insert(const RowData & data) const;
+    int insert(const EntryData & data) const;
 
     /*********
      * QUERY *
      *********/
-    std::vector<RowData> getData(const std::pair<int,int> humidity, const std::pair<int,int> illumination, const std::pair<int,int> temperature,
+    std::vector<EntryData> getData(const std::pair<int,int> humidity, const std::pair<int,int> illumination, const std::pair<int,int> temperature,
                                  const std::set<int> species) const;
-    std::vector<RowData> getAllData() const;
+    std::vector<EntryData> getAllData() const;
 
     /**********
      * DELETE *

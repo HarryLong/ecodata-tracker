@@ -1,5 +1,5 @@
 #include "central_widget.h"
-#include "utils.h"
+#include "../utils.h"
 
 #include <QBoxLayout>
 #include <QLabel>
@@ -46,10 +46,10 @@ void DataWidget::clear()
         removeRow(0);
 }
 
-void DataWidget::set(std::vector<RowData> data)
+void DataWidget::set(std::vector<EntryData> data)
 {
     clear();
-    for(RowData row : data)
+    for(EntryData row : data)
     {
         int row_id (rowCount());
         insertRow(row_id);

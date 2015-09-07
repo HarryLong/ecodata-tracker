@@ -4,8 +4,8 @@
 #include <vector>
 #include <QString>
 #include <QTableWidget>
-#include "row_data.h"
-#include "db_manager.h"
+#include "../entry_data.h"
+#include "../db_manager.h"
 
 #include <QLineEdit>
 #include <QPushButton>
@@ -33,7 +33,7 @@ public:
     ~DataWidget();
 
     void clear();
-    void set(std::vector<RowData> data);
+    void set(std::vector<EntryData> data);
 
 private:
     QTableWidgetItem * generate_read_only_cell(QString p_cell_content);

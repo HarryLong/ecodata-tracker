@@ -9,21 +9,57 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(sqlite3 REQUIRED)
 
+set(CORE_LIBS ${LIBS} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${SQLITE3_LIBRARIES})
+set(GUI_LIBS ${LIBS} ${Qt5Gui_LIBRARIES})
+
 set(CMAKE_AUTOMOC ON)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCC_GL_DEBUG_ -DDEBUG_ON -Wall -g -std=c++11 -Wno-reorder -Wno-unused-variable") #DEBUG
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG_ON -O3 -Wall -std=c++11 -Wno-reorder -Wno-unused-variable") #DEBUG
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pg -std=c++11 -pthread -Wno-reorder") # profiling
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -Wno-reorder") # base
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -std=c++11 -pthread -Wno-reorder") #debug
-#SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} "-O2 -g")
-#SET(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} "-O2")
-#SET(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} "-O0 -g")
+SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2 -g -DGL_DEBUG -std=c++11 -Wno-write-strings")
+SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -Wno-write-strings")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -cd ../g -DGL_DEBUG -std=c++11 -Wno-write-strings")
 
-add_executable(EcoDataTrackerGUI settings main_window central_widget tracker db_manager row_data utils)
-add_library(EcoDataTracker settings tracker db_manager row_data utils)
+#SET(CMAKE_BUILD_TYPE DEBUG)
+SET(CMAKE_BUILD_TYPE RELEASE)
+#SET(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 
-target_link_libraries(EcoDataTrackerGUI sqlite3 Qt5::Widgets Qt5::Core Qt5::Gui )
-target_link_libraries(EcoDataTracker sqlite3 Qt5::Widgets Qt5::Core Qt5::Gui )
+set(CORE_SRC_FILES tracker db_manager entry_data utils settings)
+set(GUI_SRC_FILES gui/main_window gui/central_widget)
 
-# Use the Widgets module from Qt 5.
+SET(API_HEADER_FILES tracker.h entry_data.h)
+
+# GUI
+add_executable(EcoDataTrackerGUI ${CORE_SRC_FILES}  ${GUI_SRC_FILES})
+target_link_libraries(EcoDataTrackerGUI ${CORE_LIBS} ${GUI_LIBS} )
+
+# LIB
+add_library(EcoDataTracker SHARED ${CORE_SRC_FILES})
+target_link_libraries(EcoDataTracker ${CORE_LIBS} )
+
+#INSTALL EXECUTABLE
+install(TARGETS EcoDataTrackerGUI
+        RUNTIME DESTINATION bin
+        CONFIGURATIONS Release)
+
+#INSTALL LIBRARY
+install(TARGETS EcoDataTracker
+        LIBRARY DESTINATION lib
+        CONFIGURATIONS Release)
+
+# INSTALL HEADER FILES
+install(FILES ${API_HEADER_FILES}
+        DESTINATION include/ecotracker)
+
+# SETUP CONFIGURATION FILE
+SET(HOME_DIR $ENV{HOME})
+set(CONFIG_FILE ecotracker.conf)
+file(WRITE ${CONFIG_FILE} "home_dir=${HOME_DIR}/.ecotracker")
+
+# INSTALL CONFIGURATION FILES
+install(FILES ${CONFIG_FILE}
+        DESTINATION etc/ecotracker)
+
+# INSTAL HOME DIR
+install(DIRECTORY .ecotracker
+        DESTINATION ${HOME_DIR}
+        FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_WRITE GROUP_READ WORLD_EXECUTE WORLD_WRITE WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_WRITE GROUP_READ WORLD_EXECUTE WORLD_WRITE WORLD_READ)

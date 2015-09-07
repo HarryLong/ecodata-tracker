@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <iostream>
+#include <fstream>
 
 std::string set_to_string(std::set<int> set_to_convert)
 {
@@ -58,4 +59,10 @@ bool copyRecursively(const QString & src_file_path, const QString & tgt_file_pat
             return false;
     }
     return true;
+}
+
+bool file_exists(const std::string & path)
+{
+    std::ifstream file(path);
+    return !file.fail();
 }
