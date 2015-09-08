@@ -9,13 +9,6 @@
 #include <string>
 #include <vector>
 
-struct Column{
-    int index;
-    std::string name;
-
-    Column(){}
-    Column(int index, std::string name) : index(index), name(name) {}
-};
 
 /*******************
  * DATABASE SCHEMA *
@@ -38,7 +31,6 @@ public:
     private:
         std::string m_tables[TableNames::_TABLE_COUNT];
     };
-
     class Columns{
     public:
         enum ColumnNames{
@@ -53,15 +45,14 @@ public:
 
         Columns();
         ~Columns();
-        Column get(ColumnNames name, int index = 0) const;
-        int columnCount() const;
+        std::string get(ColumnNames name, int index = 0) const;
     private:
-        std::vector<Column> m_columns[ColumnNames::_COUNT];
+        std::vector<std::string> m_columns[ColumnNames::_COUNT];
         int m_column_count;
     };
     std::string db_creation_code;
-    Columns columns;
     Tables tables;
+    Columns columns;
 };
 
 /*********************
@@ -125,6 +116,8 @@ private:
     void init();
     void exit_on_error(int p_code, int p_line,  char * p_error_msg = NULL) const;
     void build_insert_statement();
+    void bind_text(sqlite3_stmt * statement, const std::string & column_name, const std::string & svalue) const;
+    void bind_int(sqlite3_stmt * statement, const std::string & column_name, int value) const;
 
     static const DatabaseSchema _SCHEMA;
     std::string m_insert_statement;
