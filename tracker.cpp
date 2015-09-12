@@ -4,6 +4,7 @@
 #include "db_manager.h"
 #include <iostream>
 #include <QDebug>
+#include <iostream>
 
 void Tracker::addEntry(std::vector<int> humidities, std::vector<int> illuminations, std::vector<int> temperatures, int duration,
                        std::set<int> species, QTemporaryDir & tmp_data_dir)
@@ -16,9 +17,11 @@ void Tracker::addEntry(std::vector<int> humidities, std::vector<int> illuminatio
 
     // COPY DISTRIBUTION DATA
     QString unique_path(Settings::_HOME_DIR.c_str());
-    unique_path.append(QString::number(unique_row_id));
+    unique_path += "/" + QString::number(unique_row_id);
+    std::cout << "Unique path: " << unique_path.toStdString() << std::endl;
     if( ! copyRecursively(tmp_data_dir.path(), unique_path)){
         qCritical() << "Failed to create folder for new statistical entry";
+        db.remove(unique_row_id);
     }
 }
 

@@ -110,7 +110,7 @@ public:
     /**********
      * DELETE *
      **********/
-    void remove() const; // TODO: Whats the best reference for removal?
+    void remove(int id) const; // TODO: Whats the best reference for removal?
 
 private:
     void init();

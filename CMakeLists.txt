@@ -8,6 +8,10 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(sqlite3 REQUIRED)
 
+set(INCLUDE_DIRECTORIES ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Core_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${sqlite3_INCLUDE_DIRS} )
+
+include_directories(${INCLUDE_DIRECTORIES})
+
 set(CORE_LIBS ${LIBS} ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${SQLITE3_LIBRARIES})
 set(GUI_LIBS ${LIBS} ${Qt5Gui_LIBRARIES})
 
@@ -37,7 +41,7 @@ target_link_libraries(EcoDataTracker ${CORE_LIBS} )
 #INSTALL EXECUTABLE
 install(TARGETS EcoDataTrackerGUI
         RUNTIME DESTINATION bin
-        CONFIGURATIONS Release)
+        CONFIGURATIONS RELWITHDEBINFO)
 
 #INSTALL LIBRARY
 install(TARGETS EcoDataTracker

@@ -242,9 +242,6 @@ void DBManager::bind_int(sqlite3_stmt * statement, const std::string & column_na
  **********/
 int DBManager::insert(const EntryData & data) const
 {
-    qCritical() << "STATEMENT:";
-    qCritical() << m_insert_statement.c_str();
-
     sqlite3 * db (open_db());
     char *error_msg = 0;
     sqlite3_stmt * statement;
@@ -350,9 +347,19 @@ std::vector<EntryData> DBManager::getAllData() const
 /**********
  * DELETE *
  **********/
-void DBManager::remove() const
+void DBManager::remove(int id) const
 {
+    sqlite3 * db (open_db());
+    char *error_msg = 0;
+    sqlite3_stmt * statement;
 
+    std::string sql = "DELETE FROM " + _SCHEMA.tables[DatabaseSchema::Tables::_ECODATA];
+    sql += " WHERE " + _SCHEMA.columns.get(DatabaseSchema::Columns::_ID) + " = " + std::to_string(id) + ";";
+
+    // Prepare the statement
+    exit_on_error(sqlite3_prepare_v2(db, sql.c_str(),-1/*null-terminated*/,&statement,NULL), __LINE__);
+    // Commit
+    exit_on_error(sqlite3_step(statement), __LINE__);
 }
 
 void DBManager::exit_on_error(int p_code, int p_line,  char * p_error_msg) const
