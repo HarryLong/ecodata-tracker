@@ -106,6 +106,7 @@ public:
      * QUERY *
      *********/
     std::vector<EntryData> getAllData() const;
+    bool contains(const EntryData & entry, int & dir_name) const;
 
     /**********
      * DELETE *
@@ -115,12 +116,13 @@ public:
 private:
     void init();
     void exit_on_error(int p_code, int p_line,  char * p_error_msg = NULL) const;
-    void build_insert_statement();
+    void build_prepared_statements();
     void bind_text(sqlite3_stmt * statement, const std::string & column_name, const std::string & svalue) const;
     void bind_int(sqlite3_stmt * statement, const std::string & column_name, int value) const;
 
     static const DatabaseSchema _SCHEMA;
     std::string m_insert_statement;
+    std::string m_contains_statement;
 };
 
 #endif // DB_MANAGER_H

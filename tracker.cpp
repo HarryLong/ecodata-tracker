@@ -11,6 +11,8 @@ void Tracker::addEntry(std::vector<int> humidities, std::vector<int> illuminatio
 {
     EntryData entry(humidities, illuminations, temperatures, species, duration);
 
+    // First check if this simulation is already in the database
+
     // INSERT INTO DB
     DBManager db;
     int unique_row_id ( db.insert(entry) );
@@ -19,6 +21,14 @@ void Tracker::addEntry(std::vector<int> humidities, std::vector<int> illuminatio
     QString unique_path(Settings::_HOME_DIR.c_str());
     unique_path += "/" + QString::number(unique_row_id);
     std::cout << "Unique path: " << unique_path.toStdString() << std::endl;
+
+    // First remove target directory if it already exists
+    if(!removeRecursively(unique_path))
+    {
+        qCritical() << "Failed to remove existing destination folder";
+        db.remove(unique_row_id);
+    }
+
     if( ! copyRecursively(tmp_data_dir.path(), unique_path)){
         qCritical() << "Failed to create folder for new statistical entry";
         db.remove(unique_row_id);

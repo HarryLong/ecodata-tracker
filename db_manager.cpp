@@ -145,45 +145,83 @@ DBManager::~DBManager()
 
 }
 
-void DBManager::build_insert_statement()
+void DBManager::build_prepared_statements()
 {
-    std::string m_values_substatement(" VALUES(");
-
-    m_insert_statement = "INSERT INTO " + _SCHEMA.tables[DatabaseSchema::Tables::_ECODATA] + " (";
-    // SPECIES
+    /***********************
+     * INSERTION STATEMENT *
+     ***********************/
     {
-        std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES));
-        m_insert_statement += column_name + ",";
-        m_values_substatement += "@" + column_name + ",";
+        std::string m_values_substatement(" VALUES(");
+        m_insert_statement = "INSERT INTO " + _SCHEMA.tables[DatabaseSchema::Tables::_ECODATA] + " (";
+        // SPECIES
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES));
+            m_insert_statement += column_name + ",";
+            m_values_substatement += "@" + column_name + ",";
+        }
+        // DURATION
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_DURATION));
+            m_insert_statement += column_name+ ",";
+            m_values_substatement += "@" + column_name + ",";
+        }
+        // HUMIDITY
+        for(int i (0); i < 12; i++)
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_HUMIDITIES,i));
+            m_insert_statement += column_name + ",";
+            m_values_substatement += "@" + column_name + ",";
+        }
+        // ILLUMINATION
+        for(int i (0); i < 12; i++)
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_ILLUMINATIONS,i));
+            m_insert_statement += column_name + ",";
+            m_values_substatement += "@" + column_name + ",";
+        }
+        // TEMPERATURE
+        for(int i (0); i < 12; i++)
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_TEMPERATURES,i));
+            m_insert_statement += column_name + (i != 11 ? "," : ")");
+            m_values_substatement += "@" + column_name + (i != 11 ? "," : ");");
+        }
+        m_insert_statement += m_values_substatement;
     }
-    // DURATION
+    /**********************
+     * CONTAINS STATEMENT *
+     **********************/
     {
-        std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_DURATION));
-        m_insert_statement += column_name+ ",";
-        m_values_substatement += "@" + column_name + ",";
+        m_contains_statement = "SELECT * FROM " + _SCHEMA.tables[DatabaseSchema::Tables::_ECODATA] + " WHERE ";
+        // SPECIES
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES));
+            m_insert_statement += column_name + " = @" + column_name + " AND ";
+        }
+        // DURATION
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_DURATION));
+            m_insert_statement += column_name + " = @" + column_name + " AND ";
+        }
+        // HUMIDITY
+        for(int i (0); i < 12; i++)
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_HUMIDITIES,i));
+            m_insert_statement += column_name + " = @" + column_name + " AND ";
+        }
+        // ILLUMINATION
+        for(int i (0); i < 12; i++)
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_ILLUMINATIONS,i));
+            m_insert_statement += column_name + " = @" + column_name + " AND ";
+        }
+        // TEMPERATURE
+        for(int i (0); i < 12; i++)
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_TEMPERATURES,i));
+            m_insert_statement += column_name + " = @" + column_name + (i != 11 ? " AND " : "");
+        }
     }
-    // HUMIDITY
-    for(int i (0); i < 12; i++)
-    {
-        std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_HUMIDITIES,i));
-        m_insert_statement += column_name + ",";
-        m_values_substatement += "@" + column_name + ",";
-    }
-    // ILLUMINATION
-    for(int i (0); i < 12; i++)
-    {
-        std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_ILLUMINATIONS,i));
-        m_insert_statement += column_name + ",";
-        m_values_substatement += "@" + column_name + ",";
-    }
-    // TEMPERATURE
-    for(int i (0); i < 12; i++)
-    {
-        std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_TEMPERATURES,i));
-        m_insert_statement += column_name + (i != 11 ? "," : ")");
-        m_values_substatement += "@" + column_name + (i != 11 ? "," : ");");
-    }
-    m_insert_statement += m_values_substatement;
 }
 
 
@@ -197,7 +235,7 @@ sqlite3 * DBManager::open_db() const
 
 void DBManager::init()
 {
-    build_insert_statement();
+    build_prepared_statements();
 
     char *error_msg = 0;
     sqlite3 * db (open_db());
@@ -242,14 +280,19 @@ void DBManager::bind_int(sqlite3_stmt * statement, const std::string & column_na
  **********/
 int DBManager::insert(const EntryData & data) const
 {
+    // Check if already present --> overwrite directory
+    {
+        int dir(-1);
+        if(contains(data, dir))
+            return dir;
+    }
+
     sqlite3 * db (open_db());
     char *error_msg = 0;
     sqlite3_stmt * statement;
 
     // Prepare the statement
     exit_on_error(sqlite3_prepare_v2(db, m_insert_statement.c_str(),-1/*null-terminated*/,&statement,NULL), __LINE__);
-
-    qCritical() << __LINE__;
 
     /***********
      * BINDING *
@@ -268,14 +311,11 @@ int DBManager::insert(const EntryData & data) const
         // Temperature
         bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_TEMPERATURES,i), data.temperatures[i]);
     }
-    qCritical() << __LINE__;
 
     // Commit
     exit_on_error(sqlite3_step(statement), __LINE__);
-    qCritical() << __LINE__;
 
     int inserted_row_id(sqlite3_last_insert_rowid(db));
-    qCritical() << __LINE__;
 
     // finalise the statement
     sqlite3_finalize(statement);
@@ -342,6 +382,53 @@ std::vector<EntryData> DBManager::getAllData() const
         ret.push_back(row_data);
     }
     return ret;
+}
+
+bool DBManager::contains(const EntryData & entry, int & dir_name) const
+{
+    sqlite3 * db (open_db());
+    char *error_msg = 0;
+    sqlite3_stmt * statement;
+
+    // Prepare the statement
+    exit_on_error(sqlite3_prepare_v2(db, m_contains_statement.c_str(),-1/*null-terminated*/,&statement,NULL), __LINE__);
+
+    /***********
+     * BINDING *
+     ***********/
+    // SPECIES
+    bind_text(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES), set_to_string(entry.species));
+    // DURATION
+    bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_DURATION), entry.duration);
+    // HUMIDITY & TEMPERATURE & ILLUMINATION
+    for(int i (0); i < 12; i++)
+    {
+        // Humidity
+        bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_HUMIDITIES,i), entry.humidities[i]);
+        // Illumination
+        bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_ILLUMINATIONS,i), entry.illuminations[i]);
+        // Temperature
+        bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_TEMPERATURES,i), entry.temperatures[i]);
+    }
+
+    dir_name = -1;
+    while(sqlite3_step(statement) == SQLITE_ROW)
+    {
+        for(int c (0); c < sqlite3_column_count(statement); c++)
+        {
+            std::string column_name(sqlite3_column_name(statement, c));
+            if(column_name == _SCHEMA.columns.get(DatabaseSchema::Columns::_ID))
+            {
+                dir_name = sqlite3_column_int(statement,c);
+            }
+        }
+    }
+
+    // finalise the statement
+    sqlite3_finalize(statement);
+    sqlite3_close(db);
+
+    return dir_name != -1;
 }
 
 /**********

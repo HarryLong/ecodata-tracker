@@ -112,10 +112,13 @@ void DataWidget::set(std::vector<EntryData> data)
  * CENTRAL WIDGET *
  ******************/
 CentralWidget::CentralWidget() :
-    m_data_widget(new DataWidget())
+    m_data_widget(new DataWidget()),
+    m_refresh_btn(new QPushButton("Refresh", this))
 {
     init_layout();
-    m_data_widget->set(m_db.getAllData());
+    refresh();
+
+    connect(m_refresh_btn, SIGNAL(clicked(bool)), this, SLOT(refresh()));
 }
 
 CentralWidget::~CentralWidget()
@@ -123,15 +126,10 @@ CentralWidget::~CentralWidget()
 
 }
 
-//void CentralWidget::refresh()
-//{
-//    std::pair<int,int> humidity(get_int_line_edit_value(m_min_humidity_query), get_int_line_edit_value(m_max_humidity_query) );
-//    std::pair<int,int> illumination(get_int_line_edit_value(m_min_illumination_query), get_int_line_edit_value(m_max_illumination_query) );
-//    std::pair<int,int> temperature(get_int_line_edit_value(m_min_temperature_query), get_int_line_edit_value(m_max_temperature_query) );
-//    std::set<int> species ( string_to_set((m_species_query->text().trimmed().toStdString()) ));
-
-//    m_data_widget->set(m_db.getData(humidity, illumination, temperature, species));
-//}
+void CentralWidget::refresh()
+{
+    m_data_widget->set(m_db.getAllData());
+}
 
 //int CentralWidget::get_int_line_edit_value(QLineEdit * line_edit)
 //{
@@ -147,6 +145,15 @@ void CentralWidget::init_layout()
 {
     QVBoxLayout * main_layout = new QVBoxLayout;
 
+    // Refresh Button
+    {
+        QHBoxLayout * h_layout = new QHBoxLayout;
+        h_layout->addWidget(m_refresh_btn, 0, Qt::AlignCenter);
+
+        main_layout->addLayout(h_layout);
+    }
+
+    // MainWidget
     main_layout->addWidget(m_data_widget, 1);
 
     setLayout(main_layout);

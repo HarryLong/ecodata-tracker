@@ -39,11 +39,29 @@ std::set<int> string_to_set(std::string string_to_convert)
     return ret;
 }
 
+bool removeRecursively(const QString & path)
+{
+    QFileInfo file_info(path);
+    if(file_info.exists())
+    {
+        if (file_info.isDir()) {
+            QDir target_dir(path);
+            return target_dir.removeRecursively();
+        } else { // FILE
+            QFile file(path);
+            return file.remove();
+        }
+    }
+
+    return true;
+}
+
 bool copyRecursively(const QString & src_file_path, const QString & tgt_file_path)
 {
     QFileInfo src_file_info(src_file_path);
     if (src_file_info.isDir()) {
         QDir target_dir(tgt_file_path);
+
         if (!target_dir.mkpath("."))
             return false;
         QDir src_dir(src_file_path);

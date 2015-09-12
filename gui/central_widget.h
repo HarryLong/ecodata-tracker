@@ -49,14 +49,15 @@ public:
     CentralWidget();
     ~CentralWidget();
 
-private slots:
-//    void refresh();
+public slots:
+    void refresh();
 
 private:
     void init_layout();
 //    QLineEdit * create_connected_line_edit();
 //    int get_int_line_edit_value(QLineEdit * line_edit);
 
+    QPushButton * m_refresh_btn;
     DataWidget * m_data_widget;
     DBManager m_db;
 };
