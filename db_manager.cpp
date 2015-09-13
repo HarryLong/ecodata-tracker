@@ -196,30 +196,25 @@ void DBManager::build_prepared_statements()
         // SPECIES
         {
             std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES));
-            m_insert_statement += column_name + " = @" + column_name + " AND ";
-        }
-        // DURATION
-        {
-            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_DURATION));
-            m_insert_statement += column_name + " = @" + column_name + " AND ";
+            m_contains_statement += column_name + " = @" + column_name + " AND ";
         }
         // HUMIDITY
         for(int i (0); i < 12; i++)
         {
             std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_HUMIDITIES,i));
-            m_insert_statement += column_name + " = @" + column_name + " AND ";
+            m_contains_statement += column_name + " = @" + column_name + " AND ";
         }
         // ILLUMINATION
         for(int i (0); i < 12; i++)
         {
             std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_ILLUMINATIONS,i));
-            m_insert_statement += column_name + " = @" + column_name + " AND ";
+            m_contains_statement += column_name + " = @" + column_name + " AND ";
         }
         // TEMPERATURE
         for(int i (0); i < 12; i++)
         {
             std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_TEMPERATURES,i));
-            m_insert_statement += column_name + " = @" + column_name + (i != 11 ? " AND " : "");
+            m_contains_statement += column_name + " = @" + column_name + (i != 11 ? " AND " : "");
         }
     }
 }
@@ -384,6 +379,7 @@ std::vector<EntryData> DBManager::getAllData() const
     return ret;
 }
 
+
 bool DBManager::contains(const EntryData & entry, int & dir_name) const
 {
     sqlite3 * db (open_db());
@@ -398,8 +394,6 @@ bool DBManager::contains(const EntryData & entry, int & dir_name) const
      ***********/
     // SPECIES
     bind_text(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES), set_to_string(entry.species));
-    // DURATION
-    bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_DURATION), entry.duration);
     // HUMIDITY & TEMPERATURE & ILLUMINATION
     for(int i (0); i < 12; i++)
     {
