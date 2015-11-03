@@ -36,6 +36,12 @@ void Tracker::addEntry(std::vector<int> humidities, std::vector<int> illuminatio
     }
 }
 
+bool Tracker::contains(const EntryData & entry_data)
+{
+    int dummy_dir;
+    return DBManager().contains(entry_data, dummy_dir);
+}
+
 std::vector<EntryData> Tracker::getAllEntries()
 {
     return DBManager().getAllData();
