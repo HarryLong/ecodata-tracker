@@ -34,6 +34,13 @@ DatabaseSchema::Columns::Columns()
         m_columns[ColumnNames::_DURATION] = columns;
     }
 
+    // DURATION
+    {
+        std::vector<std::string> columns;
+        columns.push_back("slope");
+        m_columns[ColumnNames::_SLOPE] = columns;
+    }
+
     // HUMIDITIES
     {
         std::vector<std::string> columns;
@@ -109,6 +116,9 @@ DatabaseSchema::DatabaseSchema()
                        columns.get(Columns::_ID) + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                        columns.get(Columns::_SPECIES) + " INTEGER NOT NULL," +
                        columns.get(Columns::_DURATION) + " TEXT NOT NULL,";
+    // SLOPE
+    db_creation_code += columns.get(Columns::_SLOPE) + " INT NOT NULL,";
+
     // Humidity
     for(int i(0); i < 12; i++)
         db_creation_code += columns.get(Columns::_HUMIDITIES, i) + " INTEGER NOT NULL,";
@@ -165,6 +175,12 @@ void DBManager::build_prepared_statements()
             m_insert_statement += column_name+ ",";
             m_values_substatement += "@" + column_name + ",";
         }
+        // SLOPE
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SLOPE));
+            m_insert_statement += column_name+ ",";
+            m_values_substatement += "@" + column_name + ",";
+        }
         // HUMIDITY
         for(int i (0); i < 12; i++)
         {
@@ -196,6 +212,11 @@ void DBManager::build_prepared_statements()
         // SPECIES
         {
             std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES));
+            m_contains_statement += column_name + " = @" + column_name + " AND ";
+        }
+        // SLOPE
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SLOPE));
             m_contains_statement += column_name + " = @" + column_name + " AND ";
         }
         // HUMIDITY
@@ -296,6 +317,8 @@ int DBManager::insert(const EntryData & data) const
     bind_text(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES), set_to_string(data.species));
     // DURATION
     bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_DURATION), data.duration);
+    // SLOPE
+    bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_SLOPE), data.slope);
     // HUMIDITY & TEMPERATURE & ILLUMINATION
     for(int i (0); i < 12; i++)
     {
@@ -352,6 +375,10 @@ std::vector<EntryData> DBManager::getAllData() const
             {
                 row_data.duration = sqlite3_column_int(statement,c);
             }
+            else if(column_name == _SCHEMA.columns.get(DatabaseSchema::Columns::_SLOPE))
+            {
+                row_data.slope = sqlite3_column_int(statement,c);
+            }
             else
             {
                 for(int i(0); i < 12; i++)
@@ -394,6 +421,8 @@ bool DBManager::contains(const EntryData & entry, int & dir_name) const
      ***********/
     // SPECIES
     bind_text(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES), set_to_string(entry.species));
+    // SLOPE
+    bind_int(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_SLOPE), entry.slope);
     // HUMIDITY & TEMPERATURE & ILLUMINATION
     for(int i (0); i < 12; i++)
     {

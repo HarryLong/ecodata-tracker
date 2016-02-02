@@ -12,6 +12,7 @@ DataWidget::Columns::Columns()
     species = i++;
     dir = i++;
     duration = i++;
+    slope = i++;
     for(int ii(0); ii < 12; ii++)
         humidities[ii] = i++;
     for(int ii(0); ii < 12; ii++)
@@ -39,6 +40,8 @@ DataWidget::DataWidget()
     setHorizontalHeaderItem(m_columns.dir, new QTableWidgetItem("Dir"));
     // Duration
     setHorizontalHeaderItem(m_columns.duration, new QTableWidgetItem("Duration"));
+    // Slope
+    setHorizontalHeaderItem(m_columns.slope, new QTableWidgetItem("Slope"));
     for(int i(0); i < 12; i++)
     {
         // HUMIDITY
@@ -95,6 +98,8 @@ void DataWidget::set(std::vector<EntryData> data)
         setItem(row_id, m_columns.dir, generate_read_only_cell(QString::number(row.dir)));
         // Duration
         setItem(row_id, m_columns.duration, generate_read_only_cell(QString::number(row.duration)));
+        // Slope
+        setItem(row_id, m_columns.slope, generate_read_only_cell(QString::number(row.slope)));
         // Humidities
         for(int i(0); i < 12; i++)
         {

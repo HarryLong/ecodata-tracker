@@ -30,6 +30,7 @@ private:
         int species;
         int dir;
         int duration;
+        int slope;
         int humidities[12];
         int illuminations[12];
         int temperatures[12];

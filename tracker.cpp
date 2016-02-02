@@ -6,11 +6,11 @@
 #include <QDebug>
 #include <iostream>
 
-void Tracker::addEntry(std::vector<int> humidities, std::vector<int> illuminations, std::vector<int> temperatures, int duration,
+void Tracker::addEntry(int slope, std::vector<int> humidities, std::vector<int> illuminations, std::vector<int> temperatures, int duration,
                        std::set<int> species, QTemporaryDir & tmp_data_dir)
 {
 
-    EntryData entry(humidities, illuminations, temperatures, species, duration);
+    EntryData entry(slope, humidities, illuminations, temperatures, species, duration);
 
     // First check if this simulation is already in the database
 

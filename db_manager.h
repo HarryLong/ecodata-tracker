@@ -37,6 +37,7 @@ public:
             _ID,
             _SPECIES,
             _DURATION,
+            _SLOPE,
             _HUMIDITIES,
             _ILLUMINATIONS,
             _TEMPERATURES,
