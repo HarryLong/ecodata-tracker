@@ -19,7 +19,12 @@ DatabaseSchema::Columns::Columns()
         columns.push_back("_id");
         m_columns[ColumnNames::_ID] = columns;
     }
-
+    // TIMESTAMPS
+    {
+        std::vector<std::string> columns;
+        columns.push_back("timestamp");
+        m_columns[ColumnNames::_TIMESTAMP] = columns;
+    }
     // SPECIES
     {
         std::vector<std::string> columns;
@@ -114,6 +119,7 @@ DatabaseSchema::DatabaseSchema()
     // Build db creation code
     db_creation_code = "CREATE TABLE IF NOT EXISTS " + tables[Tables::_ECODATA] + "( " +
                        columns.get(Columns::_ID) + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                       columns.get(Columns::_TIMESTAMP) + " INTEGER NOT NULL," +
                        columns.get(Columns::_SPECIES) + " INTEGER NOT NULL," +
                        columns.get(Columns::_DURATION) + " TEXT NOT NULL,";
     // SLOPE
@@ -163,6 +169,12 @@ void DBManager::build_prepared_statements()
     {
         std::string m_values_substatement(" VALUES(");
         m_insert_statement = "INSERT INTO " + _SCHEMA.tables[DatabaseSchema::Tables::_ECODATA] + " (";
+        // TIMESTAMP
+        {
+            std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_TIMESTAMP));
+            m_insert_statement += column_name + ",";
+            m_values_substatement += "@" + column_name + ",";
+        }
         // SPECIES
         {
             std::string column_name(_SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES));
@@ -278,6 +290,20 @@ void DBManager::bind_text(sqlite3_stmt * statement, const std::string & column_n
     exit_on_error(sqlite3_bind_text(statement, parameterIndex, value.c_str(), -1, NULL), __LINE__);
 }
 
+void DBManager::bind_int64(sqlite3_stmt * statement, const std::string & column_name, unsigned long value) const
+{
+    std::string column_bind_name = "@" + column_name;
+    int parameterIndex( sqlite3_bind_parameter_index(statement, column_bind_name.c_str()) );
+    if(parameterIndex == 0)
+    {
+        qCritical() << "Failed to get column index!";
+        exit(1);
+    }
+
+    exit_on_error(sqlite3_bind_int64(statement, parameterIndex, value), __LINE__);
+}
+
+
 void DBManager::bind_int(sqlite3_stmt * statement, const std::string & column_name, int value) const
 {
     std::string column_bind_name = "@" + column_name;
@@ -313,6 +339,8 @@ int DBManager::insert(const EntryData & data) const
     /***********
      * BINDING *
      ***********/
+    // TIMESTAMP
+    bind_int64(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_TIMESTAMP), data.timestamp);
     // SPECIES
     bind_text(statement, _SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES), set_to_string(data.species));
     // DURATION
@@ -366,6 +394,10 @@ std::vector<EntryData> DBManager::getAllData() const
             if(column_name == _SCHEMA.columns.get(DatabaseSchema::Columns::_ID))
             {
                 row_data.dir = sqlite3_column_int(statement,c);
+            }
+            else if(column_name == _SCHEMA.columns.get(DatabaseSchema::Columns::_TIMESTAMP))
+            {
+                row_data.timestamp = (unsigned long) sqlite3_column_int64(statement,c);
             }
             else if(column_name == _SCHEMA.columns.get(DatabaseSchema::Columns::_SPECIES))
             {

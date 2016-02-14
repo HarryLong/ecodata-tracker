@@ -35,6 +35,7 @@ public:
     public:
         enum ColumnNames{
             _ID,
+            _TIMESTAMP,
             _SPECIES,
             _DURATION,
             _SLOPE,
@@ -120,6 +121,7 @@ private:
     void build_prepared_statements();
     void bind_text(sqlite3_stmt * statement, const std::string & column_name, const std::string & svalue) const;
     void bind_int(sqlite3_stmt * statement, const std::string & column_name, int value) const;
+    void bind_int64(sqlite3_stmt * statement, const std::string & column_name, unsigned long value) const;
 
     static const DatabaseSchema _SCHEMA;
     std::string m_insert_statement;

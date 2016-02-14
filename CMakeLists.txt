@@ -26,9 +26,10 @@ SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -cd ../g -DGL_DEBUG -std
 SET(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 
 set(CORE_SRC_FILES tracker db_manager entry_data utils settings)
-set(GUI_SRC_FILES gui/main_window gui/central_widget)
+set(GUI_SRC_FILES gui/main_window gui/central_widget gui/ecodata_entries_widget)
 
-SET(API_HEADER_FILES tracker.h entry_data.h)
+SET(BASE_HEADER_FILES tracker.h entry_data.h)
+SET(GUI_HEADER_FILES gui/ecodata_entries_widget.h)
 
 # GUI
 add_executable(EcoDataTrackerGUI ${CORE_SRC_FILES}  ${GUI_SRC_FILES})
@@ -48,9 +49,13 @@ install(TARGETS EcoDataTracker
         LIBRARY DESTINATION lib
         CONFIGURATIONS RELWITHDEBINFO)
 
-# INSTALL HEADER FILES
-install(FILES ${API_HEADER_FILES}
+# INSTALL CORE HEADER FILES
+install(FILES ${BASE_HEADER_FILES}
         DESTINATION include/ecotracker)
+
+# INSTALL BASE HEADER FILES
+install(FILES ${GUI_HEADER_FILES}
+        DESTINATION include/ecotracker/gui)
 
 # SETUP CONFIGURATION FILE
 SET(HOME_DIR $ENV{HOME})

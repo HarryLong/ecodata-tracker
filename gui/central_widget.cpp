@@ -3,121 +3,17 @@
 
 #include <QBoxLayout>
 #include <QLabel>
-#include <iostream>
 
+#include "ecodata_entries_widget.h"
+#include <QLineEdit>
+#include <QPushButton>
 
-DataWidget::Columns::Columns()
-{
-    int i(0);
-    species = i++;
-    dir = i++;
-    duration = i++;
-    slope = i++;
-    for(int ii(0); ii < 12; ii++)
-        humidities[ii] = i++;
-    for(int ii(0); ii < 12; ii++)
-        illuminations[ii] = i++;
-    for(int ii(0); ii < 12; ii++)
-        temperatures[ii] = i++;
-    column_count = i-1;
-}
-
-DataWidget::Columns::~Columns()
-{
-
-}
-
-/***************
- * DATA WIDGET *
- ***************/
-DataWidget::DataWidget()
-{
-    setColumnCount(m_columns.column_count);
-
-    // Species
-    setHorizontalHeaderItem(m_columns.species, new QTableWidgetItem("Species"));
-    // Dir
-    setHorizontalHeaderItem(m_columns.dir, new QTableWidgetItem("Dir"));
-    // Duration
-    setHorizontalHeaderItem(m_columns.duration, new QTableWidgetItem("Duration"));
-    // Slope
-    setHorizontalHeaderItem(m_columns.slope, new QTableWidgetItem("Slope"));
-    for(int i(0); i < 12; i++)
-    {
-        // HUMIDITY
-        {
-            QString header("Humidity [");
-            header += QString::number(i) + "]";
-            setHorizontalHeaderItem(m_columns.humidities[i], new QTableWidgetItem(header));
-        }
-        // ILLUMINATION
-        {
-            QString header("Illumination [");
-            header += QString::number(i) + "]";
-            setHorizontalHeaderItem(m_columns.illuminations[i], new QTableWidgetItem(header));
-        }
-        // TEMPERATURE
-        {
-            QString header("Temperature [");
-            header += QString::number(i) + "]";
-            setHorizontalHeaderItem(m_columns.temperatures[i], new QTableWidgetItem(header));
-        }
-    }
-}
-
-DataWidget::~DataWidget()
-{
-
-}
-
-QTableWidgetItem * DataWidget::generate_read_only_cell(QString p_cell_content)
-{
-    QTableWidgetItem * cell = new QTableWidgetItem(p_cell_content);
-    cell->setFlags(cell->flags() ^ Qt::ItemIsEditable);
-
-    return cell;
-}
-
-void DataWidget::clear()
-{
-    while (rowCount() > 0)
-        removeRow(0);
-}
-
-void DataWidget::set(std::vector<EntryData> data)
-{
-    clear();
-    for(EntryData row : data)
-    {
-        int row_id (rowCount());
-        insertRow(row_id);
-
-        // Species
-        setItem(row_id, m_columns.species, generate_read_only_cell(QString::fromStdString(set_to_string(row.species))));
-        // Dir
-        setItem(row_id, m_columns.dir, generate_read_only_cell(QString::number(row.dir)));
-        // Duration
-        setItem(row_id, m_columns.duration, generate_read_only_cell(QString::number(row.duration)));
-        // Slope
-        setItem(row_id, m_columns.slope, generate_read_only_cell(QString::number(row.slope)));
-        // Humidities
-        for(int i(0); i < 12; i++)
-        {
-            // HUMIDITY
-            setItem(row_id, m_columns.humidities[i], generate_read_only_cell(QString::number(row.humidities[i])));
-            // ILLUMINATION
-            setItem(row_id, m_columns.illuminations[i], generate_read_only_cell(QString::number(row.illuminations[i])));
-            // TEMPERATURE
-            setItem(row_id, m_columns.temperatures[i], generate_read_only_cell(QString::number(row.temperatures[i])));
-        }
-    }
-}
 
 /******************
  * CENTRAL WIDGET *
  ******************/
 CentralWidget::CentralWidget() :
-    m_data_widget(new DataWidget()),
+    m_data_widget(new EcodataEntriesWidget()),
     m_refresh_btn(new QPushButton("Refresh", this))
 {
     init_layout();
@@ -133,7 +29,7 @@ CentralWidget::~CentralWidget()
 
 void CentralWidget::refresh()
 {
-    m_data_widget->set(m_db.getAllData());
+    m_data_widget->refresh();
 }
 
 //int CentralWidget::get_int_line_edit_value(QLineEdit * line_edit)
