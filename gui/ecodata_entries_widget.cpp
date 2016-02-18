@@ -3,6 +3,7 @@
 #include <time.h>
 #include "../utils.h"
 #include "../db_manager.h"
+#include "../settings.h"
 
 EcodataEntriesWidget::Columns::Columns()
 {
@@ -29,7 +30,7 @@ EcodataEntriesWidget::Columns::~Columns()
 /***************
  * DATA WIDGET *
  ***************/
-EcodataEntriesWidget::EcodataEntriesWidget() : m_sort_order(SortOrder::Unsorted)
+EcodataEntriesWidget::EcodataEntriesWidget() : m_sort_order(SortOrder::Descending)
 {
     setSelectionMode(QAbstractItemView::SelectionMode::ContiguousSelection);
 
@@ -69,11 +70,23 @@ EcodataEntriesWidget::EcodataEntriesWidget() : m_sort_order(SortOrder::Unsorted)
 //    connect(horizontalHeaderItem(0), SIGNAL())
     connect(this->horizontalHeader(), SIGNAL(sectionPressed(int)), this, SLOT(header_pressed(int)));
     connect(this, SIGNAL(cellPressed(int,int)), this, SLOT(cell_pressed(int,int)));
+
+    refresh();
 }
 
 EcodataEntriesWidget::~EcodataEntriesWidget()
 {
 
+}
+
+QString EcodataEntriesWidget::getDirOfSelectedEntry()
+{
+    return QString::fromStdString(Settings::_HOME_DIR).append("/").append(QString::number(m_data.at(currentRow()).dir));
+}
+
+EntryData EcodataEntriesWidget::getEntryAtRow(int row_id)
+{
+    return m_data.at(row_id);
 }
 
 void EcodataEntriesWidget::refresh()
@@ -86,11 +99,7 @@ void EcodataEntriesWidget::header_pressed(int idx)
 {
     if(idx == 0)
     {
-        if(m_sort_order != SortOrder::Ascending)
-            m_sort_order = SortOrder::Ascending;
-        else
-            m_sort_order = SortOrder::Descending;
-
+        m_sort_order = static_cast<SortOrder>(((static_cast<int>(m_sort_order)+1)%2));
         sort();
     }
 }

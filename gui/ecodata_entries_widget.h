@@ -16,6 +16,9 @@ public:
     EcodataEntriesWidget();
     ~EcodataEntriesWidget();
 
+    EntryData getEntryAtRow(int);
+    QString getDirOfSelectedEntry();
+
 signals:
     void row_selected(int);
 
@@ -29,10 +32,9 @@ private slots:
     void sort();
 
 private:
-    enum SortOrder{
-        Ascending,
-        Descending,
-        Unsorted
+    enum class SortOrder : int{
+        Ascending = 0,
+        Descending
     } m_sort_order;
 
     class Columns{

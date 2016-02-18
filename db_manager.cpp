@@ -256,6 +256,7 @@ void DBManager::build_prepared_statements()
 sqlite3 * DBManager::open_db() const
 {
     sqlite3 * db;
+    std::cout << "Opening ecotracker database: " << Settings::_DB_PATH.c_str() << std::endl;
     exit_on_error ( sqlite3_open(Settings::_DB_PATH.c_str(), &db), __LINE__, "" );
     exit_on_error( sqlite3_exec(db, "PRAGMA foreign_keys = ON;", 0, 0, 0), __LINE__);
     return db;

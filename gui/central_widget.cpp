@@ -17,7 +17,6 @@ CentralWidget::CentralWidget() :
     m_refresh_btn(new QPushButton("Refresh", this))
 {
     init_layout();
-    refresh();
 
     connect(m_refresh_btn, SIGNAL(clicked(bool)), this, SLOT(refresh()));
 }
