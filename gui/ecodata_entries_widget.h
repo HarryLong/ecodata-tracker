@@ -27,7 +27,8 @@ public slots:
     void refresh();
 
 private slots:
-    void header_pressed(int idx);
+    void horizontal_header_pressed(int idx);
+    void vertical_header_pressed(int idx);
     void cell_pressed(int row, int column);
     void sort();
 
